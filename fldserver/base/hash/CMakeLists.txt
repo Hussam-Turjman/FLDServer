@@ -1,0 +1,25 @@
+fldserver_cc_library(
+        NAME
+        hash
+        HDRS
+        "hash.h"
+        "legacy_hash.h"
+        "md5.h"
+        "md5_boringssl.h"
+        "md5_constexpr.h"
+        "md5_constexpr_internal.h"
+        "sha1.h"
+        "sha1_boringssl.h"
+        COPTS
+        ${FLDSERVER_DEFAULT_COPTS}
+        SRCS
+        "hash.cc"
+        "legacy_hash.cc"
+        "md5_boringssl.cc"
+        "sha1_boringssl.cc"
+        DEFINES
+        DEPS
+        Threads::Threads
+        PUBLIC
+        OBJECT_LIB
+)

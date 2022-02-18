@@ -1,0 +1,32 @@
+fldserver_cc_library(
+        NAME
+        ced
+        HDRS
+        "compact_enc_det/compact_enc_det.h"
+        "compact_enc_det/compact_enc_det_generated_tables.h"
+        "compact_enc_det/compact_enc_det_generated_tables2.h"
+        "compact_enc_det/compact_enc_det_hint_code.h"
+        "util/basictypes.h"
+        "util/case_insensitive_hash.h"
+        "util/commandlineflags.h"
+        "util/encodings/encodings.h"
+        "util/encodings/encodings.pb.h"
+        "util/languages/languages.h"
+        "util/languages/languages.pb.h"
+        "util/logging.h"
+        "util/port.h"
+        "util/string_util.h"
+        "util/varsetter.h"
+        COPTS
+        ${FLDSERVER_DEFAULT_COPTS}
+        SRCS
+        "compact_enc_det/compact_enc_det.cc"
+        "compact_enc_det/compact_enc_det_hint_code.cc"
+        "util/encodings/encodings.cc"
+        "util/languages/languages.cc"
+        DEFINES
+        DEPS
+        Threads::Threads
+        PUBLIC
+        OBJECT_LIB
+)

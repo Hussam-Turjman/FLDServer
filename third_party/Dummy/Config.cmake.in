@@ -1,0 +1,97 @@
+# Auto generated file by blitz 2021-04-29-22:22:31. Blitz is a tool for generating cmake 
+# templates, written by (Mohammed Hussam Al Turjman, hussam.turjman@gmail.com). 
+# For more information please visit https://github.com/Hussam-Turjman/LibraryTemplate
+
+# Copyright (c) 2021 The Blitz project Authors. All rights reserved. Use of this source 
+# code is governed by a BSD-style license that can be found in the LICENSE file.
+
+@PACKAGE_INIT@
+
+include ( "${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@Targets.cmake" )
+
+
+set(@PROJECT_NAME_CAPITAL@_VERSION @ABI_VERSION@)
+
+set(CMAKE_FIND_LIBRARY_SUFFIXES_SAVE "${CMAKE_FIND_LIBRARY_SUFFIXES}")
+set(@PROJECT_NAME_CAPITAL@_LIB_TYPE shared)
+set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_STATIC_LIBRARY_SUFFIX})
+
+# Get the path of the current file.
+get_filename_component(@PROJECT_NAME_CAPITAL@_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+get_filename_component(@PROJECT_NAME_CAPITAL@_INSTALL_PREFIX "${@PROJECT_NAME_CAPITAL@_CMAKE_DIR}/../../.." ABSOLUTE)
+
+set(@PROJECT_NAME_CAPITAL@_POSSIBLE_PKG_NAMES)
+list(APPEND @PROJECT_NAME_CAPITAL@_POSSIBLE_PKG_NAMES ${CMAKE_FIND_PACKAGE_NAME} @PROJECT_NAME_CAPITAL@ @PROJECT_NAME@ @LIBNAME@)
+list(REMOVE_DUPLICATES @PROJECT_NAME_CAPITAL@_POSSIBLE_PKG_NAMES)
+
+# Find includes
+unset(_@LIBNAME@_h CACHE)
+find_path(_@LIBNAME@_h
+              NAMES @PROJECT_NAME@/@PROJECT_NAME@Config.h
+              PATHS "${@PROJECT_NAME_CAPITAL@_INSTALL_PREFIX}/include"
+              NO_DEFAULT_PATH)
+
+if(_@LIBNAME@_h)
+        set(@PROJECT_NAME_CAPITAL@_INCLUDE_DIR "${_@LIBNAME@_h}")
+        message(STATUS "Found @PROJECT_NAME@ include directory: ${_@LIBNAME@_h}")
+else()
+        message(FATAL_ERROR "Your @PROJECT_NAME@ library does not contain header files!")
+endif()
+
+
+unset(_@LIBNAME@_lib CACHE)
+set(@PROJECT_NAME_CAPITAL@ "@LIBNAME@")
+find_library(_@LIBNAME@_lib
+            NAMES "@LIBNAME@"
+            PATHS "${@PROJECT_NAME_CAPITAL@_INSTALL_PREFIX}/lib"
+            NO_DEFAULT_PATH)
+
+
+if(_@LIBNAME@_lib)
+
+    foreach(name ${@PROJECT_NAME_CAPITAL@_POSSIBLE_PKG_NAMES})
+            set(${name}_FOUND TRUE)
+            set(${name}_NOTFOUND FALSE)
+    endforeach()
+        message(STATUS "Found @PROJECT_NAME@ library in ${_@LIBNAME@_lib}")
+    else()
+
+    if(${CMAKE_FIND_PACKAGE_NAME}_FIND_REQUIRED_${LIB})
+          message(FATAL_ERROR "@PROJECT_NAME@ does not exist")
+    else()
+          message(WARNING "@PROJECT_NAME@ does not exist!")
+    endif()
+
+endif()
+
+
+set(CONFIG_FOR_INSTALL_TREE 1)
+
+if(@PROJECT_NAME_CAPITAL@)
+    if(CONFIG_FOR_INSTALL_TREE)
+        message(STATUS "Found @PROJECT_NAME@  ${@PROJECT_NAME_CAPITAL@_VERSION} in ${@PROJECT_NAME_CAPITAL@_INSTALL_PREFIX}")
+    else()
+        message(STATUS "Found @PROJECT_NAME@  ${@PROJECT_NAME_CAPITAL@_VERSION} in ${@PROJECT_NAME_CAPITAL@_CMAKE_DIR}")
+    endif()
+
+    # Avoid including targets more than one times
+    if(NOT TARGET @PROJECT_NAME_CAPITAL@_LIB_TYPE )
+        # Include the project Targets file, this contains definitions for IMPORTED targets.
+        message(STATUS "Including following file for @PROJECT_NAME@ targets : ${@PROJECT_NAME_CAPITAL@_CMAKE_DIR}/@PROJECT_NAME@Targets.cmake")
+
+        include(${@PROJECT_NAME_CAPITAL@_CMAKE_DIR}/@PROJECT_NAME@Targets.cmake)
+    endif()
+else()
+    if(${CMAKE_FIND_PACKAGE_NAME}_FIND_REQUIRED)
+        message(FATAL_ERROR "Can not find @PROJECT_NAME@.")
+    else()
+        message(WARNING "Can not find @PROJECT_NAME@.")
+    endif()
+endif()
+
+set(CMAKE_FIND_LIBRARY_SUFFIXES "${CMAKE_FIND_LIBRARY_SUFFIXES_SAVE}")
+
+unset(@PROJECT_NAME_CAPITAL@_LIB_TYPE)
+unset(@PROJECT_NAME_CAPITAL@_POSSIBLE_PKG_NAMES)
+unset(@PROJECT_NAME_CAPITAL@_INSTALL_PREFIX)
+unset(CONFIG_FOR_INSTALL_TREE)

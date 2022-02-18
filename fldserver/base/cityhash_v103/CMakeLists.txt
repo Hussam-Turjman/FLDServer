@@ -1,0 +1,15 @@
+fldserver_cc_library(
+        NAME
+        cityhash_v103
+        HDRS
+        "src/city_v103.h"
+        COPTS
+        ${FLDSERVER_DEFAULT_COPTS}
+        SRCS
+        "src/city_v103.cc"
+        DEFINES
+        DEPS
+        Threads::Threads
+        PUBLIC
+        OBJECT_LIB
+)

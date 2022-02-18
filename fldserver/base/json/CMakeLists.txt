@@ -1,0 +1,28 @@
+fldserver_cc_library(
+        NAME
+        json
+        HDRS
+        "json_common.h"
+        "json_file_value_serializer.h"
+        "json_parser.h"
+        "json_reader.h"
+        "json_string_value_serializer.h"
+        "json_value_converter.h"
+        "json_writer.h"
+        "string_escape.h"
+        COPTS
+        ${FLDSERVER_DEFAULT_COPTS}
+        SRCS
+        "json_file_value_serializer.cc"
+        "json_parser.cc"
+        "json_reader.cc"
+        "json_string_value_serializer.cc"
+        "json_value_converter.cc"
+        "json_writer.cc"
+        "string_escape.cc"
+        DEFINES
+        DEPS
+        Threads::Threads
+        PUBLIC
+        OBJECT_LIB
+)

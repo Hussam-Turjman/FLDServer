@@ -1,0 +1,410 @@
+// Copyright (c) 2021,2022 The FLDServer project Authors. All rights reserved. Use of this
+// source code is governed by a license that can be found in the LICENSE file.
+
+
+#ifndef __LIB_FLDSERVER_CONFIG_H__
+#define __LIB_FLDSERVER_CONFIG_H__
+
+
+/* Libfldserver version*/
+#define FLDSERVER_VERSION "@FLDSERVER_VERSION@"
+#define FLDSERVER_VERSION_MAJOR @VERSION_MAJOR@
+#define FLDSERVER_VERSION_MINOR @VERSION_MINOR@
+#define FLDSERVER_VERSION_PATCH @VERSION_PATCH@
+
+/* Architecture definitions */
+#ifndef IS__x86_64
+#define IS__x86_64 @IS__x86_64@
+#endif
+#ifndef IS__x86_64__
+#define IS__x86_64__  @IS__x86_64__@
+#endif
+#ifndef IS__amd64
+#define IS__amd64 @IS__amd64@
+#endif
+#ifndef IS_M_X64
+#define IS_M_X64 @IS_M_X64@
+#endif
+#ifndef IS__i386
+#define IS__i386 @IS__i386@
+#endif
+#ifndef IS__i386__
+#define IS__i386__ @IS__i386__@
+#endif
+#ifndef IS_M_IX86
+#define IS_M_IX86 @IS_M_IX86@
+#endif
+#ifndef IS_64BIT
+#define IS_64BIT  @IS_64BIT@
+#endif
+#ifndef IS_X86
+#define IS_X86    @IS_X86@
+#endif
+#ifndef IS_X64
+#define IS_X64    @IS_X64@
+#endif
+
+/* OS definitions */
+#ifndef OS_NAME
+#define OS_NAME   "@OS_NAME@"
+#endif
+#ifndef OS_PLATFORM
+#define OS_PLATFORM "@OS_PLATFORM@"
+#endif
+#ifndef OS_VERSION
+#define OS_VERSION "@OS_VERSION@"
+#endif
+#ifndef OS_RELEASE
+#define OS_RELEASE "@OS_RELEASE@"
+#endif
+
+#ifndef IS_POSIX
+#define IS_POSIX @IS_POSIX@
+#endif
+#ifndef IS_WIN
+#define IS_WIN @IS_WIN@
+#endif
+#ifndef IS_APPLE
+#define IS_APPLE @IS_APPLE@
+#endif
+#ifndef IS_LINUX
+#define IS_LINUX @IS_LINUX@
+#endif
+#ifndef IS_MAC
+#define IS_MAC @IS_MAC@
+#endif
+
+#ifndef IS_LITTLE_ENDIAN
+#define IS_LITTLE_ENDIAN @IS_LITTLE_ENDIAN@
+#endif
+
+#ifndef IS_BIG_ENDIAN
+#define IS_BIG_ENDIAN @IS_BIG_ENDIAN@
+#endif
+
+
+
+/* Hardware definitions */
+#ifndef PHYSICAL_MEMORY
+#define PHYSICAL_MEMORY @TOTAL_PHYSICAL_MEMORY@ /* In Megabyte */
+#endif
+#ifndef VIRTUAL_MEMORY
+#define VIRTUAL_MEMORY @TOTAL_VIRTUAL_MEMORY@
+#endif
+#ifndef LOGICAL_CORES
+#define LOGICAL_CORES @NUMBER_OF_LOGICAL_CORES@
+#endif
+#ifndef PHYSICAL_CORES
+#define PHYSICAL_CORES @NUMBER_OF_PHYSICAL_CORES@
+#endif
+#ifndef PROCESSOR_NAME
+#define PROCESSOR_NAME "@PROCESSOR_NAME@"
+#endif
+#ifndef PROCESSOR_DESCRIPTION
+#define PROCESSOR_DESCRIPTION "@PROCESSOR_DESCRIPTION@"
+#endif
+
+#if defined(CORE_BUILD_DLL) || defined(CORE_BUILD_SHARED_LIBS)
+#   if defined(_WIN32) || defined (__CYGWIN__)
+#           if defined(EXPORTING_CORE)
+#               define CORE_EXPORT __declspec(dllexport)
+#           else
+#               define CORE_EXPORT __declspec(dllimport)
+#           endif /* EXPORTING_CORE */
+#           define CORE_HIDDEN
+#       else /* Not windows */
+#               define CORE_EXPORT __attribute__ ((visibility ("default")))
+#               define CORE_HIDDEN  __attribute__ ((visibility ("hidden")))
+#   endif /*WIN32*/
+#else /* static build*/
+#   define CORE_EXPORT
+#   define CORE_HIDDEN
+#endif /* DLL */
+
+#define FLDSERVER_EXPORT CORE_EXPORT
+#define FLDSERVER_HIDDEN CORE_HIDDEN
+
+#define CORE_DEBUG_MODE 1
+
+/* Required headers */
+#ifndef HAS_FCNTL
+#define HAS_FCNTL @HAS_FCNTL@
+#endif
+#ifndef HAS_PTHREAD
+#define HAS_PTHREAD @HAS_PTHREAD@
+#endif
+#ifndef HAS_POLL
+#define HAS_POLL @HAS_POLL@
+#endif
+#ifndef HAS_UNISTD
+#define HAS_UNISTD @HAS_UNISTD@
+#endif
+
+#ifdef __cplusplus
+#define __CORE_BEGIN_DECLARATION extern "C"{
+#define __CORE_END_DECLARATION   }
+#else
+#define __CORE_BEGIN_DECLARATION
+#define __CORE_END_DECLARATION
+#endif
+
+// A macro to disallow the copy constructor and operator= functions. This should
+// be used in the declarations for a class.
+#define CORE_DISALLOW_COPY_AND_ASSIGN(TypeName) \
+  TypeName(const TypeName&) = delete;          \
+  CORE_DISALLOW_ASSIGN(TypeName)
+
+// Put this in the declarations for a class to be unassignable.
+#define CORE_DISALLOW_ASSIGN(TypeName) \
+  TypeName& operator=(const TypeName&) = delete;
+
+
+#define InitializerProxy(name)                                                                     \
+    class name##Initializer                                                                        \
+    {                                                                                              \
+    public:                                                                                        \
+        CORE_DISALLOW_COPY_AND_ASSIGN(name##Initializer);                                          \
+        name##Initializer();                                                                       \
+        ~name##Initializer();                                                                      \
+    }
+
+#define IGNORE_UNUSED(p) ((void) (p))
+
+
+#if defined(__GNUC__) || defined(__GNUG__)
+#define __ignore_unused_warn    __attribute__((unused))
+#define __noreturn  __attribute__ ((noreturn))
+# define CORE_LIKELY(X) __builtin_expect(!!(X), 1)
+# define CORE_UNLIKELY(X) __builtin_expect(!!(X), 0)
+#else
+#if defined(_MSC_VER)
+#define __noreturn __declspec(noreturn)
+#else
+#define __noreturn
+#endif
+
+#define __ignore_unused_warn
+# define CORE_LIKELY(X) (X)
+# define CORE_UNLIKELY(X) (X)
+#endif
+
+#if CORE_DEBUG_MODE
+#define CORE_DECLARE(statement) statement
+#else
+#define CORE_DECLARE(statement)
+#endif
+
+#define CORE_STATIC_ASSERT_X(Condition, Message) static_assert(bool(Condition), Message)
+
+/* From Chromium build/build_config.h*/
+#define ENABLE_LOG_ERROR_NOT_REACHED 0
+#define BASE_NUMERICS_DISABLE_OSTREAM_OPERATORS 0
+
+// A set of macros to use for platform detection.
+#if defined(__native_client__)
+// __native_client__ must be first, so that other OS_ defines are not set.
+#define OS_NACL 1
+// OS_NACL comes in two sandboxing technology flavors, SFI or Non-SFI.
+// PNaCl toolchain defines __native_client_nonsfi__ macro in Non-SFI build
+// mode, while it does not in SFI build mode.
+#if defined(__native_client_nonsfi__)
+#define OS_NACL_NONSFI
+#else
+#define OS_NACL_SFI
+#endif
+#elif defined(ANDROID)
+#define OS_ANDROID 1
+#elif defined(__APPLE__)
+// Only include TargetConditionals after testing ANDROID as some Android builds
+// on the Mac have this header available and it's not needed unless the target
+// is really an Apple platform.
+#include <TargetConditionals.h>
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+#define OS_IOS 1
+#else
+#define OS_MAC 1
+#endif  // defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+#elif defined(__linux__)
+#if !defined(OS_CHROMEOS)
+// Do not define OS_LINUX on Chrome OS build.
+// The OS_CHROMEOS macro is defined in GN.
+#define OS_LINUX 1
+#endif  // !defined(OS_CHROMEOS)
+// Include a system header to pull in features.h for glibc/uclibc macros.
+#include <unistd.h>
+#if defined(__GLIBC__) && !defined(__UCLIBC__)
+// We really are using glibc, not uClibc pretending to be glibc.
+#define LIBC_GLIBC 1
+#endif
+#elif defined(_WIN32)
+#define OS_WIN 1
+#elif defined(__Fuchsia__)
+#define OS_FUCHSIA 1
+#elif defined(__FreeBSD__)
+#define OS_FREEBSD 1
+#elif defined(__NetBSD__)
+#define OS_NETBSD 1
+#elif defined(__OpenBSD__)
+#define OS_OPENBSD 1
+#elif defined(__sun)
+#define OS_SOLARIS 1
+#elif defined(__QNXNTO__)
+#define OS_QNX 1
+#elif defined(_AIX)
+#define OS_AIX 1
+#elif defined(__asmjs__) || defined(__wasm__)
+#define OS_ASMJS 1
+#else
+#error Please add support for your platform in build/build_config.h
+#endif
+// NOTE: Adding a new port? Please follow
+// https://chromium.googlesource.com/chromium/src/+/master/docs/new_port_policy.md
+
+#if defined(OS_MAC) || defined(OS_IOS)
+#define OS_APPLE 1
+#endif
+
+// For access to standard BSD features, use OS_BSD instead of a
+// more specific macro.
+#if defined(OS_FREEBSD) || defined(OS_NETBSD) || defined(OS_OPENBSD)
+#define OS_BSD 1
+#endif
+
+// For access to standard POSIXish features, use OS_POSIX instead of a
+// more specific macro.
+#if defined(OS_AIX) || defined(OS_ANDROID) || defined(OS_ASMJS) || defined(OS_FREEBSD)             \
+        || defined(OS_IOS) || defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_MAC)         \
+        || defined(OS_NACL) || defined(OS_NETBSD) || defined(OS_OPENBSD) || defined(OS_QNX)        \
+        || defined(OS_SOLARIS)
+#define OS_POSIX 1
+#endif
+
+// Compiler detection. Note: clang masquerades as GCC on POSIX and as MSVC on
+// Windows.
+#if defined(__GNUC__)
+#define COMPILER_GCC 1
+#elif defined(_MSC_VER)
+#define COMPILER_MSVC 1
+#else
+#error Please add support for your compiler in build/build_config.h
+#endif
+
+// Processor architecture detection.  For more info on what's defined, see:
+//   http://msdn.microsoft.com/en-us/library/b0084kay.aspx
+//   http://www.agner.org/optimize/calling_conventions.pdf
+//   or with gcc, run: "echo | gcc -E -dM -"
+#if defined(_M_X64) || defined(__x86_64__)
+#define ARCH_CPU_X86_FAMILY 1
+#define ARCH_CPU_X86_64 1
+#define ARCH_CPU_64_BITS 1
+#define ARCH_CPU_LITTLE_ENDIAN 1
+#elif defined(_M_IX86) || defined(__i386__)
+#define ARCH_CPU_X86_FAMILY 1
+#define ARCH_CPU_X86 1
+#define ARCH_CPU_32_BITS 1
+#define ARCH_CPU_LITTLE_ENDIAN 1
+#elif defined(__s390x__)
+#define ARCH_CPU_S390_FAMILY 1
+#define ARCH_CPU_S390X 1
+#define ARCH_CPU_64_BITS 1
+#define ARCH_CPU_BIG_ENDIAN 1
+#elif defined(__s390__)
+#define ARCH_CPU_S390_FAMILY 1
+#define ARCH_CPU_S390 1
+#define ARCH_CPU_31_BITS 1
+#define ARCH_CPU_BIG_ENDIAN 1
+#elif (defined(__PPC64__) || defined(__PPC__)) && defined(__BIG_ENDIAN__)
+#define ARCH_CPU_PPC64_FAMILY 1
+#define ARCH_CPU_PPC64 1
+#define ARCH_CPU_64_BITS 1
+#define ARCH_CPU_BIG_ENDIAN 1
+#elif defined(__PPC64__)
+#define ARCH_CPU_PPC64_FAMILY 1
+#define ARCH_CPU_PPC64 1
+#define ARCH_CPU_64_BITS 1
+#define ARCH_CPU_LITTLE_ENDIAN 1
+#elif defined(__ARMEL__)
+#define ARCH_CPU_ARM_FAMILY 1
+#define ARCH_CPU_ARMEL 1
+#define ARCH_CPU_32_BITS 1
+#define ARCH_CPU_LITTLE_ENDIAN 1
+#elif defined(__aarch64__) || defined(_M_ARM64)
+#define ARCH_CPU_ARM_FAMILY 1
+#define ARCH_CPU_ARM64 1
+#define ARCH_CPU_64_BITS 1
+#define ARCH_CPU_LITTLE_ENDIAN 1
+#elif defined(__pnacl__) || defined(__asmjs__) || defined(__wasm__)
+#define ARCH_CPU_32_BITS 1
+#define ARCH_CPU_LITTLE_ENDIAN 1
+#elif defined(__MIPSEL__)
+#if defined(__LP64__)
+#define ARCH_CPU_MIPS_FAMILY 1
+#define ARCH_CPU_MIPS64EL 1
+#define ARCH_CPU_64_BITS 1
+#define ARCH_CPU_LITTLE_ENDIAN 1
+#else
+#define ARCH_CPU_MIPS_FAMILY 1
+#define ARCH_CPU_MIPSEL 1
+#define ARCH_CPU_32_BITS 1
+#define ARCH_CPU_LITTLE_ENDIAN 1
+#endif
+#elif defined(__MIPSEB__)
+#if defined(__LP64__)
+#define ARCH_CPU_MIPS_FAMILY 1
+#define ARCH_CPU_MIPS64 1
+#define ARCH_CPU_64_BITS 1
+#define ARCH_CPU_BIG_ENDIAN 1
+#else
+#define ARCH_CPU_MIPS_FAMILY 1
+#define ARCH_CPU_MIPS 1
+#define ARCH_CPU_32_BITS 1
+#define ARCH_CPU_BIG_ENDIAN 1
+#endif
+#else
+#error Please add support for your architecture in build/build_config.h
+#endif
+
+// Type detection for wchar_t.
+#if defined(OS_WIN)
+#define WCHAR_T_IS_UTF16
+#elif defined(OS_FUCHSIA)
+#define WCHAR_T_IS_UTF32
+#elif defined(OS_POSIX) && defined(COMPILER_GCC) && defined(__WCHAR_MAX__)                         \
+        && (__WCHAR_MAX__ == 0x7fffffff || __WCHAR_MAX__ == 0xffffffff)
+#define WCHAR_T_IS_UTF32
+#elif defined(OS_POSIX) && defined(COMPILER_GCC) && defined(__WCHAR_MAX__)                         \
+        && (__WCHAR_MAX__ == 0x7fff || __WCHAR_MAX__ == 0xffff)
+// On Posix, we'll detect short wchar_t, but projects aren't guaranteed to
+// compile in this mode (in particular, Chrome doesn't). This is intended for
+// other projects using base who manage their own dependencies and make sure
+// short wchar works for them.
+#define WCHAR_T_IS_UTF16
+#else
+#error Please add support for your compiler in build/build_config.h
+#endif
+
+#if defined(OS_ANDROID)
+// The compiler thinks std::string::const_iterator and "const char*" are
+// equivalent types.
+#define STD_STRING_ITERATOR_IS_CHAR_POINTER
+// The compiler thinks std::u16string::const_iterator and "char16*" are
+// equivalent types.
+#define BASE_STRING16_ITERATOR_IS_CHAR16_POINTER
+#endif
+
+#define ENABLE_MUTEX_PRIORITY_INHERITANCE 1
+
+#define FAKE_MACRO(...)
+
+#define BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED() 0
+#define TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED() 0
+#define ENABLE_REPORTING() 1
+#define ENABLE_WEBSOCKETS() 0
+#define ENABLE_MDNS() 1
+#define DISABLE_FTP_SUPPORT() 1
+#define POSIX_AVOID_MMAP (0)
+#define CORE_USING_BORINGSSL 0
+
+#define DCHECK_ALWAYS_ON (1)
+
+#endif /* __LIB_FLDSERVER_CONFIG_H__  */

@@ -1,0 +1,24 @@
+fldserver_cc_library(
+        NAME
+        posix
+        HDRS
+        "can_lower_nice_to.h"
+        "eintr_wrapper.h"
+        "file_descriptor_shuffle.h"
+        "global_descriptors.h"
+        "safe_strerror.h"
+        "unix_domain_socket.h"
+        COPTS
+        ${FLDSERVER_DEFAULT_COPTS}
+        SRCS
+        "can_lower_nice_to.cc"
+        "file_descriptor_shuffle.cc"
+        "global_descriptors.cc"
+        "safe_strerror.cc"
+        "unix_domain_socket.cc"
+        DEFINES
+        DEPS
+        Threads::Threads
+        PUBLIC
+        OBJECT_LIB
+)

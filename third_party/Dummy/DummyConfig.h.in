@@ -1,0 +1,85 @@
+/*
+ * Auto generated file by blitz 2021-04-29-22:22:31. Blitz is a tool for generating cmake 
+ * templates, written by (Mohammed Hussam Al Turjman, hussam.turjman@gmail.com). 
+ * For more information please visit https://github.com/Hussam-Turjman/LibraryTemplate
+ */
+
+/*
+ * Copyright (c) 2021 The Blitz project Authors. All rights reserved. Use of this source 
+ * code is governed by a BSD-style license that can be found in the LICENSE file.
+ */
+
+#ifndef __LIBDUMMY_CONFIG_H__
+#define __LIBDUMMY_CONFIG_H__
+
+/* Libdummy version*/
+#define DUMMY_VERSION_MAJOR @VERSION_MAJOR@
+#define DUMMY_VERSION_MINOR @VERSION_MINOR@
+#define DUMMY_VERSION_PATCH @VERSION_PATCH@
+
+/* Architecture definitions */
+#define IS__x86_64 @IS__x86_64@
+#define IS__x86_64__  @IS__x86_64__@
+#define IS__amd64 @IS__amd64@
+#define IS_M_X64 @IS_M_X64@
+#define IS__i386 @IS__i386@
+#define IS__i386__ @IS__i386__@
+#define IS_M_IX86 @IS_M_IX86@
+#define IS_64BIT  @IS_64BIT@
+#define IS_X86    @IS_X86@
+#define IS_X64    @IS_X64@
+
+
+/* OS definitions */
+#define OS_NAME   "@OS_NAME@"
+#define OS_PLATFORM "@OS_PLATFORM@"
+#define OS_VERSION "@OS_VERSION@"
+#define OS_RELEASE "@OS_RELEASE@"
+
+#define IS_POSIX @IS_POSIX@
+#define IS_WIN @IS_WIN@
+#define IS_APPLE @IS_APPLE@
+#define IS_LINUX @IS_LINUX@
+
+/* Hardware definitions */
+#define PHYSICAL_MEMORY @TOTAL_PHYSICAL_MEMORY@ /* In Megabyte */
+#define VIRTUAL_MEMORY @TOTAL_VIRTUAL_MEMORY@
+#define LOGICAL_CORES @NUMBER_OF_LOGICAL_CORES@
+#define PHYSICAL_CORES @NUMBER_OF_PHYSICAL_CORES@
+#define PROCESSOR_NAME "@PROCESSOR_NAME@"
+#define PROCESSOR_DESCRIPTION "@PROCESSOR_DESCRIPTION@"
+
+
+#if defined(DLL_DUMMY)
+#   if defined(_WIN32) || defined (__CYGWIN__)
+#           if defined(EXPORTING_DUMMY)
+#               ifdef __GNUC__
+#                       define DUMMY_EXPORT __attribute__ ((dllexport))
+#                  else
+#                       define DUMMY_EXPORT __declspec(dllexport) // Note: actually gcc seems to also supports this syntax.
+#               endif
+#               else
+#                   ifdef __GNUC__
+#                           define DUMMY_EXPORT __attribute__ ((dllimport))
+#                       else
+#                           define DUMMY_EXPORT __declspec(dllimport) // Note: actually gcc seems to also supports this syntax.
+#                   endif
+#           endif
+#           define DUMMY_HIDDEN
+#       else /* Not windows */
+#           if __GNUC__ >= 4 || __has_attribute(visibility)
+#               define DUMMY_EXPORT __attribute__ ((visibility ("default")))
+#               define DUMMY_HIDDEN  __attribute__ ((visibility ("hidden")))
+#           else
+#               define DUMMY_EXPORT
+#               define DUMMY_HIDDEN
+#           endif /* __GNUC__ >= 4*/
+#   endif /*WIN32*/
+#else /* static build*/
+#   define DUMMY_EXPORT
+#   define DUMMY_HIDDEN
+#endif /* DLL */
+
+
+#endif /* __LIBDUMMY_CONFIG_H__  */
+
