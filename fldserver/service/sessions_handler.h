@@ -17,10 +17,15 @@ public:
     Get();
     ~SessionsHandler();
     void
-    SetArguments(const std::vector<std::string>& arguments)
-    {
-        arguments_ = arguments;
-    }
+    SetArguments(const std::vector<std::string>& arguments);
+    Session*global_session()const{return global_session_.get();};
+    bool InitializeGlobalSession(int fps,
+                                 int frame_width,
+                                 int frame_height,
+                                 float fx = -1,
+                                 float fy = -1,
+                                 float cx = -1,
+                                 float cy = -1);
     bool
     CreateNewSession(const std::string& session_id,
                      int fps,
@@ -49,6 +54,7 @@ private:
     std::vector<std::string> arguments_;
     std::vector<std::tuple<double, std::unique_ptr<Session>>> sessions_;
     std::mutex mutex_;
+    std::unique_ptr<Session>global_session_ ;
 };
 
 }  // namespace service

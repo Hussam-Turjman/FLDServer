@@ -19,18 +19,20 @@
 #include <thread>
 #include "base/run_loop.h"
 
-static double delete_session_older_than = 3.0;  // seconds
+static double delete_session_older_than = 10.0;  // seconds
 
 static void
 Cleaner()
 {
-    const int deleted_sessions =
+    service::SessionsHandler::Get()->global_session()->manager()->OpenSequenceReader(30,640,480);
+
+    /*const int deleted_sessions =
             service::SessionsHandler::Get()->CleanDeadSessions(delete_session_older_than);
 
     if (deleted_sessions > 0)
     {
         LOG(INFO) << "\033[31mDeleted sessions : \033[m" << deleted_sessions;
-    }
+    }*/
 }
 
 namespace base
@@ -123,7 +125,13 @@ main(int argc, char** argv)
     LandmarkDetector::FeaturesExtractor extractor;
 
     service::SessionsHandler::Get()->SetArguments(manager_args);
-    for (int i = 0; i < max_clients; ++i)
+    const bool create_status = service::SessionsHandler::Get()->InitializeGlobalSession(30,640,480);
+    if (!create_status){
+        LOG(ERROR) << "Failed to create global session ";
+        return 1;
+    }
+
+    /*for (int i = 0; i < max_clients; ++i)
     {
         const bool create_status = service::SessionsHandler::Get()->CreateNewSession(std::string(),
 
@@ -135,7 +143,7 @@ main(int argc, char** argv)
             LOG(ERROR) << "Failed to create a session !!";
             return 1;
         }
-    }
+    }*/
 
     std::thread timer_thread([] {
         std::unique_ptr<base::sequence_manager::SequenceManager> sequence_manager =
@@ -153,7 +161,8 @@ main(int argc, char** argv)
         base::RunLoop runLoop;
         base::RepeatingTimer repeatingTimer;
         repeatingTimer.Start(
-                FROM_HERE, base::TimeDelta::FromSeconds(1), base::BindRepeating(&Cleaner));
+                FROM_HERE, base::TimeDelta::FromSeconds(10),
+                base::BindRepeating(&Cleaner));
         runLoop.Run(FROM_HERE);
     });
     timer_thread.detach();

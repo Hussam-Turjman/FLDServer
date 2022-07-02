@@ -68,6 +68,7 @@ Session*
 SessionsHandler::GetSession(const std::string& id, bool* should_be_initialized)
 {
     std::lock_guard<std::mutex> guard(mutex_);
+
     CHECK(should_be_initialized) << "Invalid pointer";
     *should_be_initialized = false;
     if (id.empty())
@@ -90,6 +91,7 @@ SessionsHandler::GetSession(const std::string& id, bool* should_be_initialized)
     {
         if (std::get<1>((*iter))->id().empty())
         {
+            std::get<0>(*iter) = CurrentTime();
             std::get<1>((*iter))->SetId(id);
             const bool init_status = std::get<1>((*iter))->manager()->Init(arguments_);
             CHECK(init_status) << "Failed to initialize detection manager !! session id : " << id;
@@ -164,4 +166,34 @@ SessionsHandler::ClearSession(const std::string& id)
 
     return false;
 }
+
+    void SessionsHandler::SetArguments(const std::vector<std::string> &arguments)   {
+        arguments_ = arguments;
+    }
+
+    bool SessionsHandler::InitializeGlobalSession(int fps,
+                                                  int frame_width,
+                                                  int frame_height,
+                                                  float fx ,
+                                                  float fy ,
+                                                  float cx ,
+                                                  float cy ) {
+        if (arguments_.empty())
+        {
+            LOG(ERROR) << "Arguments are not set !!";
+            return false;
+        }
+        auto session = Session::Create(arguments_,
+                                       fps, frame_width,
+                                       frame_height,
+                                       fx, fy, cx, cy);
+        if (session)
+        {
+            session->SetId("GlobalSession");
+            global_session_ = std::move(session);
+            return true;
+        }
+        return false;
+
+    }
 }  // namespace service
