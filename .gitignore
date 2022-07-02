@@ -183,3 +183,4 @@ fldserver/copts/GENERATED_FLDServerCopts.cmake
 !third_party/OpenFace/.env
 
 openface_model.zip
+playground.py

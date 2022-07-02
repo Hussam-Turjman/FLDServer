@@ -12,6 +12,7 @@ from typing import Tuple
 import cv2 as cv
 import numpy as np
 import requests
+import uuid
 
 
 class VideoCapture(object):
@@ -141,7 +142,9 @@ def run(server_url, save_video):
     print("Press q to exit ")
     print()
     print()
-
+    session_id = str(uuid.uuid4())
+    print(f"Session : {session_id}")
+    with_vis_image = False
     cap = VideoCapture()
 
     if not cap.open():
@@ -154,7 +157,6 @@ def run(server_url, save_video):
     else:
         video_out = None
 
-    frame_id = 0
     while True:
         # Capture frame-by-frame
         ret, frame = cap.read()
@@ -168,7 +170,7 @@ def run(server_url, save_video):
         video_frame = VideoFrame(flipped)
         image_size, base64_str = video_frame.to_base64(".jpg")
         height, width, channels = video_frame.pixels.shape
-        timestamp = time.time()
+        fps = cap.fps()
         vis_frame = None
         try:
             response = requests.post(server_url,
@@ -176,8 +178,9 @@ def run(server_url, save_video):
                                            "size": image_size,
                                            "width": width,
                                            "height": height,
-                                           "frame_id": frame_id,
-                                           "timestamp": timestamp})
+                                           "session_id": session_id,
+                                           "fps": fps,
+                                           "with_vis_image":with_vis_image})
 
             features = None
             if response.status_code == 200:
@@ -185,9 +188,9 @@ def run(server_url, save_video):
             if features is not None:
                 video_frame.set_features(features)
             else:
-                print("Didn't receive any features .. ")
+                print(f"Didn't receive any features .. {response}")
                 exit(0)
-            vis_image = video_frame.features["vis_image"]
+            vis_image = video_frame.features["vis_image"] if with_vis_image else base64_str
             vis_frame = VideoFrame.from_base64(vis_image, cv.IMREAD_COLOR)
 
         except Exception as e:
@@ -200,23 +203,24 @@ def run(server_url, save_video):
         if video_out is not None:
             video_out.write(vis_frame.pixels)
 
-        # Remove visualization data
-        video_frame.features.pop("vis_image")
-        video_frame.features.pop("vis_image_width")
-        video_frame.features.pop("vis_image_height")
-        video_frame.features.pop("cx")
-        video_frame.features.pop("cy")
-        video_frame.features.pop("fx")
-        video_frame.features.pop("fy")
+        if with_vis_image:
+            # Remove visualization data
+            video_frame.features.pop("vis_image")
+            video_frame.features.pop("vis_image_width")
+            video_frame.features.pop("vis_image_height")
 
         # Actual features received from the FLDServer
         confidence = video_frame.features["confidence"]
+
+        frame_id = video_frame.features["frame"]
+        timestamp = video_frame.features["timestamp"]
         print(
             f"Received {len(video_frame.features.keys())} features,"
-            f" FrameID={frame_id}, Confidence={confidence}",
+            f" FrameID={frame_id}, Confidence={confidence}"
+            f" Timestamp={timestamp}",
+
             end="\r")
 
-        frame_id += 1
         if cv.waitKey(1) == ord('q'):
             break
     # When everything done, release the capture

@@ -72,7 +72,7 @@ private:
                        std::string const& content,
                        const std::string& content_type);
     void
-    SendFile(beast::string_view target);
+    HandleGet(const http::request<request_body_t, http::basic_fields<alloc_t>>& req);
 
     void
     CheckDeadline();

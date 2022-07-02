@@ -1,4 +1,4 @@
-# OpenFace 2.2.0: a facial behavior analysis toolkit
+# OpenFace 2.2.0: an open source facial behavior analysis toolkit
 
 [![Build Status](https://travis-ci.org/TadasBaltrusaitis/OpenFace.svg?branch=master)](https://travis-ci.org/TadasBaltrusaitis/OpenFace)
 [![Build status](https://ci.appveyor.com/api/projects/status/8msiklxfbhlnsmxp/branch/master?svg=true)](https://ci.appveyor.com/project/TadasBaltrusaitis/openface/branch/master)
@@ -81,7 +81,7 @@ _IEEE International Conference on Automatic Face and Gesture Recognition_, 2015
 
 # Commercial license
 
-For inquiries about the commercial licensing of the OpenFace toolkit please visit https://cmu.flintbox.com/#technologies/5c5e7fee-6a24-467b-bb5f-eb2f72119e59
+For inquiries about the commercial licensing of the OpenFace toolkit please visit https://www.flintbox.com/public/project/50632/
 
 # Final remarks
 

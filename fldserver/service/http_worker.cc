@@ -19,6 +19,7 @@
 #include "fldserver/base/logging.h"
 #include "fldserver/base/check.h"
 #include "fldserver/base/json/json_writer.h"
+#include "fldserver/service/sessions_handler.h"
 
 #include <utility>
 
@@ -133,18 +134,21 @@ mime_type(beast::string_view path)
         return "image/svg+xml";
     return "application/text";
 }
+
 const char HttpWorker::kServerName[] = "FLDServer";
 
 HttpWorker::HttpWorker(tcp::acceptor& acceptor, std::string doc_root, ServiceObserver* observer) :
     acceptor_(acceptor), doc_root_(std::move(doc_root)), observer_(observer)
 {
 }
+
 void
 HttpWorker::Start()
 {
     Accept();
     CheckDeadline();
 }
+
 void
 HttpWorker::Accept()
 {
@@ -167,6 +171,7 @@ HttpWorker::Accept()
         }
     });
 }
+
 void
 HttpWorker::ReadRequest()
 {
@@ -190,12 +195,13 @@ HttpWorker::ReadRequest()
             ProcessRequest(parser_->get());
     });
 }
+
 void
 HttpWorker::ProcessRequest(const http::request<request_body_t, http::basic_fields<alloc_t>>& req)
 {
     switch (req.method())
     {
-        case http::verb::get: SendFile(req.target()); break;
+        case http::verb::get: HandleGet(req); break;
         case http::verb::post: HandlePost(req); break;
         default:
             // We return responses indicating an error if
@@ -206,6 +212,7 @@ HttpWorker::ProcessRequest(const http::request<request_body_t, http::basic_field
             break;
     }
 }
+
 void
 HttpWorker::SendStringResponse(http::status status,
                                std::string const& content,
@@ -229,14 +236,18 @@ HttpWorker::SendStringResponse(http::status status,
         Accept();
     });
 }
+
 void
 HttpWorker::SendBadResponse(http::status status, const std::string& error)
 {
     SendStringResponse(status, error, "text/plain");
 }
+
 void
-HttpWorker::SendFile(beast::string_view target)
+HttpWorker::HandleGet(const http::request<request_body_t, http::basic_fields<alloc_t>>& req)
 {
+    beast::string_view target = req.target();
+
     if (target == "/")
     {
         SendStringResponse(http::status::ok, index_page, "text/html");
@@ -247,6 +258,19 @@ HttpWorker::SendFile(beast::string_view target)
         base::Value value(base::Value::Type::DICTIONARY);
         value.SetKey("SuccessfulTries", base::Value(observer_->successful_tries()));
         value.SetKey("FailedTries", base::Value(observer_->failed_tries()));
+
+        std::string serialized;
+        if (base::JSONWriter::Write(value, &serialized))
+        {
+            SendStringResponse(http::status::ok, serialized, "application/json");
+            return;
+        }
+    }
+    else if (target == "/clear_all_sessions")
+    {
+        base::Value value(base::Value::Type::DICTIONARY);
+        const int cleared_sessions = SessionsHandler::Get()->ClearAllSessions();
+        value.SetKey("cleared_sessions", base::Value(cleared_sessions));
 
         std::string serialized;
         if (base::JSONWriter::Write(value, &serialized))
@@ -297,6 +321,7 @@ HttpWorker::SendFile(beast::string_view target)
         Accept();
     });
 }
+
 void
 HttpWorker::CheckDeadline()
 {
@@ -313,69 +338,116 @@ HttpWorker::CheckDeadline()
 
     request_deadline_.async_wait([this](beast::error_code) { CheckDeadline(); });
 }
+
 void
 HttpWorker::HandlePost(const http::request<request_body_t, http::basic_fields<alloc_t>>& req)
 {
     auto json_value = base::JSONReader::Read(req.body());
-    if (json_value.has_value())
+    beast::string_view target = req.target();
+    if (target == "/")
     {
-        auto image = json_value->FindKey("image");
-        auto size = json_value->FindKey("size");
-        auto width = json_value->FindKey("width");
-        auto height = json_value->FindKey("height");
-        auto frame_id = json_value->FindKey("frame_id");
-        auto timestamp = json_value->FindKey("timestamp");
-        if (!(image && size && width && height && frame_id && timestamp))
+        if (json_value.has_value())
         {
-            SendBadResponse(http::status::bad_request, "Invalid arguments\r\n");
-            return;
+            auto image = json_value->FindKey("image");
+            auto size = json_value->FindKey("size");
+            auto width = json_value->FindKey("width");
+            auto height = json_value->FindKey("height");
+            auto fps = json_value->FindKey("fps");
+            auto with_vis_image = json_value->FindKey("with_vis_image");
+
+            auto session_id = json_value->FindKey("session_id");
+            if (!(image && size && width && height && fps && session_id && with_vis_image))
+            {
+                SendBadResponse(http::status::bad_request, "Invalid arguments\r\n");
+                return;
+            }
+            if (!image->is_string())
+            {
+                SendBadResponse(http::status::bad_request, "Image must be string\r\n");
+                return;
+            }
+            if (!width->is_int())
+            {
+                SendBadResponse(http::status::bad_request, "Width must be int\r\n");
+                return;
+            }
+            if (!height->is_int())
+            {
+                SendBadResponse(http::status::bad_request, "Height must be int\r\n");
+                return;
+            }
+            if (!size->is_int())
+            {
+                SendBadResponse(http::status::bad_request, "Size must be int\r\n");
+                return;
+            }
+            if (!fps->is_double())
+            {
+                SendBadResponse(http::status::bad_request, "FPS must be double\r\n");
+                return;
+            }
+            if (!session_id->is_string())
+            {
+                SendBadResponse(http::status::bad_request, "Session_id must be string\r\n");
+                return;
+            }
+            if (!with_vis_image->is_bool())
+            {
+                SendBadResponse(http::status::bad_request, "With_vis_image must be bool\r\n");
+                return;
+            }
+
+            auto features = observer_->OnFrame(session_id->GetString(),
+                                               fps->GetDouble(),
+                                               width->GetInt(),
+                                               height->GetInt(),
+                                               image->GetString(),
+                                               size->GetInt(),
+                                               with_vis_image->GetBool());
+            if (features.has_value())
+            {
+                SendStringResponse(http::status::ok, features.value(), "application/json");
+                return;
+            }
         }
-        if (!image->is_string())
+        else
         {
-            SendBadResponse(http::status::bad_request, "Image must be string\r\n");
-            return;
-        }
-        if (!width->is_int())
-        {
-            SendBadResponse(http::status::bad_request, "Width must be int\r\n");
-            return;
-        }
-        if (!height->is_int())
-        {
-            SendBadResponse(http::status::bad_request, "Height must be int\r\n");
-            return;
-        }
-        if (!size->is_int())
-        {
-            SendBadResponse(http::status::bad_request, "Size must be int\r\n");
-            return;
-        }
-        if (!frame_id->is_int())
-        {
-            SendBadResponse(http::status::bad_request, "Frame id must be int\r\n");
-            return;
-        }
-        if (!timestamp->is_double())
-        {
-            SendBadResponse(http::status::bad_request, "Timestamp must be double\r\n");
-            return;
-        }
-        auto features = observer_->OnFrame(frame_id->GetInt(),
-                                           timestamp->GetDouble(),
-                                           width->GetInt(),
-                                           height->GetInt(),
-                                           image->GetString(),
-                                           size->GetInt());
-        if (features.has_value())
-        {
-            SendStringResponse(http::status::ok, features.value(), "application/json");
+            SendBadResponse(http::status::bad_request, "Body must be json\r\n");
             return;
         }
     }
-    else
+    else if (target == "/clear_session")
     {
-        SendBadResponse(http::status::bad_request, "Body must be json\r\n");
-        return;
+        if (json_value.has_value())
+        {
+            auto session_id = json_value->FindKey("image");
+            if (!session_id)
+            {
+                SendBadResponse(http::status::bad_request, "Invalid arguments\r\n");
+                return;
+            }
+            if (!session_id->is_string())
+            {
+                SendBadResponse(http::status::bad_request, "Session_id must be string\r\n");
+                return;
+            }
+            const bool clear_status = SessionsHandler::Get()->ClearSession(session_id->GetString());
+            base::Value value(base::Value::Type::DICTIONARY);
+
+            value.SetKey("cleared", base::Value(clear_status));
+
+            std::string serialized;
+            if (base::JSONWriter::Write(value, &serialized))
+            {
+                SendStringResponse(http::status::ok, serialized, "application/json");
+                return;
+            }
+        }
+        else
+        {
+            SendBadResponse(http::status::bad_request, "Body must be json\r\n");
+            return;
+        }
     }
 
     SendBadResponse(http::status::bad_request, "Bad Request\r\n");

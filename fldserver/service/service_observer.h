@@ -19,12 +19,13 @@ public:
     {
     }
     virtual std::optional<std::string>
-    OnFrame(int frame_id,
-            double timestamp,
+    OnFrame(const std::string& session_id,
+            double fps,
             int width,
             int height,
             const std::string& image,
-            size_t size) = 0;
+            size_t size,
+            bool with_vis_image) = 0;
 
     virtual int
     successful_tries() const final

@@ -149,6 +149,18 @@ def generate_cmake_arguments():
                       "-DBUILD_DLL=OFF",
                       "-DCORE_RUN_TESTS=OFF",
                       ],
+        "opencv": ["-DWITH_FFMPEG=ON",
+                   "-DWITH_GTK=ON",
+                   "-DBUILD_SHARED_LIBS=OFF",
+                   "-DBUILD_opencv_apps=OFF",
+                   "-DBUILD_TESTS=OFF",
+                   "-DBUILD_DOCS=OFF",
+                   "-DBUILD_EXAMPLES=OFF",
+                   "-DBUILD_JAVA=OFF",
+                   "-DBUILD_ZLIB=ON",
+                   "-DBUILD_TIFF=ON",
+                   "-DBUILD_TBB=ON",
+                   ],
 
         "OpenFace": ["-DBUILD_SHARED_LIBS=OFF",
                      "-DBUILD_EXAMPLES=OFF",
@@ -192,7 +204,6 @@ def package_manager_deps(deps_cache: DepsCache):
              "libjpeg-turbo",
              "ffmpeg",
              "dlib",
-             "opencv",
              "icu",
              ]
     to_remove = []
