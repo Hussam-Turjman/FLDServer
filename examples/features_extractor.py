@@ -506,6 +506,4 @@ def run(directory: str, view_features=True, cores=1):
 
 
 if __name__ == "__main__":
-    # FIXME Currently the FLDServer does not work with multiple clients
-    #  so keep cores=1 .
-    run(directory="Videos", view_features=True, cores=5)
+    run(directory="Videos", view_features=False, cores=5)

@@ -24,7 +24,7 @@ static double delete_session_older_than = 10.0;  // seconds
 static void
 Cleaner()
 {
-    service::SessionsHandler::Get()->global_session()->manager()->OpenSequenceReader(30,640,480);
+    //service::SessionsHandler::Get()->global_session()->manager()->OpenSequenceReader(30,640,480);
 
     /*const int deleted_sessions =
             service::SessionsHandler::Get()->CleanDeadSessions(delete_session_older_than);
