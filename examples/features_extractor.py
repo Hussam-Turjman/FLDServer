@@ -421,7 +421,7 @@ class ExtractionCallback(VideoStreamReaderCallback):
                      length=20)
 
         try:
-            response = requests.post("http://127.0.0.1:34568/",
+            response = requests.post(f"http://127.0.0.1:{server_port}/",
                                      json={"image": base64_str,
                                            "size": image_size,
                                            "width": self.video_file.reader.frame_width,
@@ -510,4 +510,5 @@ def run(directory: str, view_features=True, cores=1):
 
 
 if __name__ == "__main__":
+    server_port = "34568"
     run(directory="Videos", view_features=False, cores=5)
