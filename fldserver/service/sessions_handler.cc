@@ -178,6 +178,7 @@ SessionsHandler::ClearSession(const std::string& id)
                                                   float fy ,
                                                   float cx ,
                                                   float cy ) {
+        std::lock_guard<std::mutex> guard(mutex_);
         if (arguments_.empty())
         {
             LOG(ERROR) << "Arguments are not set !!";

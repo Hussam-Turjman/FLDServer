@@ -32,15 +32,16 @@ FeaturesExtractor::OnFrame(const std::string& session_id,
                            size_t size,
                            bool with_vis_image)
 {
-    //bool should_be_initialized = false;
+    bool should_be_initialized = false;
     //auto session = service::SessionsHandler::Get()->GetSession(session_id, &should_be_initialized);
+    std::lock_guard<std::mutex> guard(service::SessionsHandler::Get()->global_mutex());
     auto session = service::SessionsHandler::Get()->global_session();
     if (!session)
     {
         LOG(ERROR) << "Failed to get detection session !!";
         return std::nullopt;
     }
-   /* if (should_be_initialized)
+    /*if (should_be_initialized)
     {
         LOG(INFO) << "Should be initialized .. ";
         const bool open_status = session->manager()->OpenSequenceReader(fps, width, height);

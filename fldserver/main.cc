@@ -24,9 +24,13 @@ static double delete_session_older_than = 10.0;  // seconds
 static void
 Cleaner()
 {
+    LOG(INFO) << "\033[32m Cleaning global session \033[m";
+    const bool status = service::SessionsHandler::Get()->InitializeGlobalSession(30,640,480);
+    CHECK(status) << "FAiled to init global session";
+
     //service::SessionsHandler::Get()->global_session()->manager()->OpenSequenceReader(30,640,480);
 
-    /*const int deleted_sessions =
+   /* const int deleted_sessions =
             service::SessionsHandler::Get()->CleanDeadSessions(delete_session_older_than);
 
     if (deleted_sessions > 0)
@@ -161,7 +165,7 @@ main(int argc, char** argv)
         base::RunLoop runLoop;
         base::RepeatingTimer repeatingTimer;
         repeatingTimer.Start(
-                FROM_HERE, base::TimeDelta::FromSeconds(10),
+                FROM_HERE, base::TimeDelta::FromSeconds(30),
                 base::BindRepeating(&Cleaner));
         runLoop.Run(FROM_HERE);
     });

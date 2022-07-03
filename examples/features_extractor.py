@@ -468,9 +468,13 @@ def extract_features(video_file: VideoFile, view_features: bool):
     assert video_file.load(), f"Failed to load the video file {video_file}"
 
     fake_callback = ExtractionCallback(video_file, view_features)
-    logger.info(f"\n{video_file}")
-    video_file.reader.use_frames(fake_callback)
-    fake_callback.export_to_csv()
+    if os.path.exists(fake_callback.csv_absolute_path):
+        print(
+            f"Features of the video {video_file.file_name} already exists at : {fake_callback.csv_absolute_path}")
+    else:
+        logger.info(f"\n{video_file}")
+        video_file.reader.use_frames(fake_callback)
+        fake_callback.export_to_csv()
     print(os.linesep)
     logger.info("--------------------")
 

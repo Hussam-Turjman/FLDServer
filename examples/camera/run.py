@@ -144,7 +144,7 @@ def run(server_url, save_video):
     print()
     session_id = str(uuid.uuid4())
     print(f"Session : {session_id}")
-    with_vis_image = False
+    with_vis_image = True
     cap = VideoCapture()
 
     if not cap.open():
@@ -233,4 +233,4 @@ def run(server_url, save_video):
 
 
 if __name__ == "__main__":
-    run(server_url="http://127.0.0.1:34568/", save_video=True)
+    run(server_url="http://127.0.0.1:34568/", save_video=False)

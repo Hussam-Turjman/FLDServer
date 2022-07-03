@@ -18,7 +18,10 @@ public:
     ~SessionsHandler();
     void
     SetArguments(const std::vector<std::string>& arguments);
-    Session*global_session()const{return global_session_.get();};
+    std::mutex&global_mutex(){return mutex_;}
+    Session*global_session() const{
+        return global_session_.get();
+    };
     bool InitializeGlobalSession(int fps,
                                  int frame_width,
                                  int frame_height,
